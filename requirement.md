@@ -44,7 +44,9 @@ Reference for golang MCP SDK - https://github.com/modelcontextprotocol/go-sdk
         - if content is edited or added, trigger the embedding and update / add embedding
 
 
+[RAG Eval](https://docs.ragas.io/en/latest/getstarted/rag_eval/#up-next)
 
+``` python
 sample_docs = [
     "Albert Einstein proposed the theory of relativity, which transformed our understanding of time, space, and gravity.",
     "Marie Curie was a physicist and chemist who conducted pioneering research on radioactivity and won two Nobel Prizes.",
@@ -54,9 +56,7 @@ sample_docs = [
 ]
 
 
-[RAG Eval](https://docs.ragas.io/en/latest/getstarted/rag_eval/#up-next)
 
-``` python
 sample_queries = [
     "Who introduced the theory of relativity?",
     "Who was the first computer programmer?",
@@ -71,4 +71,5 @@ expected_responses = [
     "Isaac Newton formulated the laws of motion and universal gravitation, laying the foundation for classical mechanics.",
     "Marie Curie was a physicist and chemist who conducted pioneering research on radioactivity and won two Nobel Prizes.",
     "Charles Darwin introduced the theory of evolution by natural selection in his book 'On the Origin of Species'."
-]```
+]
+```
