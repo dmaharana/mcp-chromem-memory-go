@@ -167,8 +167,13 @@ func (ms *MemoryStore) ListDocuments() ([]Document, error) {
 		return nil, fmt.Errorf("collection not found")
 	}
 	
-	// Get all documents by querying with empty string and high limit
-	results, err := collection.Query(context.Background(), "", 1000, nil, nil)
+	count := collection.Count()
+	if count == 0 {
+		return []Document{}, nil
+	}
+
+	// Get all documents by querying with a single space and high limit
+	results, err := collection.Query(context.Background(), " ", int(count), nil, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to list documents")
 		return nil, fmt.Errorf("failed to list documents: %w", err)
