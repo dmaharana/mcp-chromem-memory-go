@@ -63,9 +63,8 @@ sample_queries = [
     "What did Isaac Newton contribute to science?",
     "Who won two Nobel Prizes for research on radioactivity?",
     "What is the theory of evolution by natural selection?"
-]```
+]
 
-``` python
 expected_responses = [
     "Albert Einstein proposed the theory of relativity, which transformed our understanding of time, space, and gravity.",
     "Ada Lovelace is regarded as the first computer programmer for her work on Charles Babbage's early mechanical computer, the Analytical Engine.",
