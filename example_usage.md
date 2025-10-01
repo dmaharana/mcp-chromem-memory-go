@@ -1,8 +1,37 @@
 # Example Usage
 
-## Manual Testing
+## Web Mode (Browser Interface)
 
-Start the server:
+Start the web server:
+```bash
+./memory-server -web
+```
+
+This will:
+1. Start the web server on port 8080 (default)
+2. Automatically open your browser to http://localhost:8080
+3. Show a dashboard with statistics and document management interface
+
+### Web Interface Features:
+- **Dashboard**: View document counts and usage statistics
+- **Add Memories**: Form to add new documents with tags, favorites, and properties
+- **Search & Browse**: Search through memories or view all documents
+- **Edit Documents**: Click "Edit" to modify existing memories
+- **Favorite Management**: Toggle favorite status with star button
+- **Real-time Updates**: Statistics update automatically
+
+### Custom Web Server Options:
+```bash
+# Custom port and database
+./memory-server -web -web-port 9090 -db-path my-memories.db
+
+# Don't open browser automatically
+./memory-server -web -open=false
+```
+
+## MCP Mode (Command Line)
+
+Start the MCP server:
 ```bash
 ./memory-server
 ```

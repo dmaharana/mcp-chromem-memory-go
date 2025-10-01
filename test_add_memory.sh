@@ -1,89 +1,97 @@
 #!/bin/bash
 
-set -euo pipefail
+# Test script to add sample memories via REST API
 
-DB_PATH="/tmp/test_memory.db"
-HTTP_PORT=8080
+BASE_URL="http://localhost:8080"
 
-rm -rf "${DB_PATH}"
+echo "Adding sample memories to test the system..."
+echo ""
 
-# Kill any process already listening on the port
-lsof -ti :${HTTP_PORT} | xargs -r kill -9
-
-# Start the memory server in the background
-./memory-server --db-path "${DB_PATH}" --http-port "${HTTP_PORT}" < /dev/null &
-SERVER_PID=$!
-
-# Give the server a moment to start
-sleep 2
-
-# Function to send MCP requests
-send_mcp_request() {
-  local method="$1"
-  local params="$2"
-  local id="$3"
-  
-  curl -X POST -H "Content-Type: application/json" \
-    -d "{\"jsonrpc\": \"2.0\", \"method\": \"$method\", \"params\": $params, \"id\": \"$id\"}" \
-    http://localhost:"${HTTP_PORT}"
-}
-
-# Test cases
-
-# Add Albert Einstein
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "add_memory", "arguments": {"content": "Albert Einstein proposed the theory of relativity, which transformed our understanding of time, space, and gravity.", "tags": ["physics", "relativity", "einstein"], "properties": {"scientist": "Albert Einstein", "field": "physics"}}}' "1")
-echo "Response: $RESPONSE"
-if ! echo "$RESPONSE" | grep -q "Memory added successfully"; then
-  echo "Test failed: Failed to add Albert Einstein"
-  kill "${SERVER_PID}"
-  exit 1
+# Test if server is running
+if ! curl -s "$BASE_URL/api/stats" > /dev/null; then
+    echo "Error: Server is not running at $BASE_URL"
+    echo "Please start the server with: ./memory-server -web"
+    exit 1
 fi
 
-# Add Marie Curie
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "add_memory", "arguments": {"content": "Marie Curie was a physicist and chemist who conducted pioneering research on radioactivity and won two Nobel Prizes.", "tags": ["physics", "chemistry", "radioactivity", "curie"], "properties": {"scientist": "Marie Curie", "field": "physics, chemistry"}}}' "2")
-if ! echo "$RESPONSE" | grep -q "Memory added successfully"; then
-  echo "Test failed: Failed to add Marie Curie"
-  kill "${SERVER_PID}"
-  exit 1
-fi
+echo "Server is running. Adding sample memories..."
+echo ""
 
-# Add Isaac Newton
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "add_memory", "arguments": {"content": "Isaac Newton formulated the laws of motion and universal gravitation, laying the foundation for classical mechanics.", "tags": ["physics", "mechanics", "newton"], "properties": {"scientist": "Isaac Newton", "field": "physics"}}}' "3")
-if ! echo "$RESPONSE" | grep -q "Memory added successfully"; then
-  echo "Test failed: Failed to add Isaac Newton"
-  kill "${SERVER_PID}"
-  exit 1
-fi
+# Add memory 1
+echo "Adding memory 1: Go channels..."
+curl -X POST "$BASE_URL/api/documents" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Go channels are used for communication between goroutines. Use make(chan Type) to create a channel.",
+    "tags": ["golang", "concurrency", "channels"],
+    "favorite": true,
+    "properties": {"category": "concept", "difficulty": "intermediate"}
+  }'
+echo -e "\n"
 
-# Add Charles Darwin
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "add_memory", "arguments": {"content": "Charles Darwin introduced the theory of evolution by natural selection in his book 'On the Origin of Species'.", "tags": ["biology", "evolution", "darwin"], "properties": {"scientist": "Charles Darwin", "field": "biology", "book": "On the Origin of Species"}}}' "4")
-if ! echo "$RESPONSE" | grep -q "Memory added successfully"; then
-  echo "Test failed: Failed to add Charles Darwin"
-  kill "${SERVER_PID}"
-  exit 1
-fi
+# Add memory 2
+echo "Adding memory 2: Null pointer debugging..."
+curl -X POST "$BASE_URL/api/documents" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "To fix null pointer exceptions in Go: Always check if pointer is nil before dereferencing. Use if ptr != nil { ... }",
+    "tags": ["golang", "debugging", "error-handling"],
+    "favorite": true,
+    "properties": {"category": "bug-fix", "language": "go"}
+  }'
+echo -e "\n"
 
-# Add Ada Lovelace
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "add_memory", "arguments": {"content": "Ada Lovelace is regarded as the first computer programmer for her work on Charles Babbage's early mechanical computer, the Analytical Engine.", "tags": ["computer science", "programming", "lovelace"], "properties": {"scientist": "Ada Lovelace", "field": "computer science", "invention": "Analytical Engine"}}}' "5")
-if ! echo "$RESPONSE" | grep -q "Memory added successfully"; then
-  echo "Test failed: Failed to add Ada Lovelace"
-  kill "${SERVER_PID}"
-  exit 1
-fi
+# Add memory 3
+echo "Adding memory 3: Docker best practices..."
+curl -X POST "$BASE_URL/api/documents" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Docker best practices: Use multi-stage builds, minimize layers, use .dockerignore, and run as non-root user.",
+    "tags": ["docker", "devops", "best-practices"],
+    "favorite": false,
+    "properties": {"category": "tip", "technology": "docker"}
+  }'
+echo -e "\n"
 
-# List all memories and verify count
-RESPONSE=$(send_mcp_request "tools/call" '{"name": "list_memories", "arguments": {}}' "6")
-if ! echo "$RESPONSE" | grep -q "Total 5 memories"; then
-  echo "Test failed: Expected 5 memories, got different count"
-  echo "Response: $RESPONSE"
-  kill "${SERVER_PID}"
-  exit 1
-fi
+# Add memory 4
+echo "Adding memory 4: Git workflow..."
+curl -X POST "$BASE_URL/api/documents" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Git workflow: Create feature branch, make changes, commit with descriptive messages, push, create PR, review, merge.",
+    "tags": ["git", "workflow", "version-control"],
+    "favorite": false,
+    "properties": {"category": "process", "tool": "git"}
+  }'
+echo -e "\n"
 
-echo "All add_memory tests passed!"
+# Add memory 5
+echo "Adding memory 5: REST API design..."
+curl -X POST "$BASE_URL/api/documents" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "REST API design principles: Use HTTP methods correctly (GET, POST, PUT, DELETE), return appropriate status codes, use consistent naming conventions.",
+    "tags": ["api", "rest", "design", "web-development"],
+    "favorite": true,
+    "properties": {"category": "design-pattern", "domain": "web"}
+  }'
+echo -e "\n"
 
-# Clean up
-kill "${SERVER_PID}"
-rm -f "${DB_PATH}"
+echo "Sample memories added successfully!"
+echo ""
+echo "Test searches:"
+echo ""
 
-exit 0
+echo "1. Search for 'golang':"
+curl -s "$BASE_URL/api/search?q=golang&limit=3" | jq -r '.[] | "- \(.content[0:80])..."'
+echo ""
+
+echo "2. Search for 'debugging':"
+curl -s "$BASE_URL/api/search?q=debugging&limit=3" | jq -r '.[] | "- \(.content[0:80])..."'
+echo ""
+
+echo "3. Get current stats:"
+curl -s "$BASE_URL/api/stats" | jq '.'
+echo ""
+
+echo "Visit http://localhost:8080 to see the web interface!"

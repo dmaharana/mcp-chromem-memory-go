@@ -140,10 +140,10 @@ func NewMCPServer(store *MemoryStore) *MCPServer {
 	return s
 }
 
-func (s *MCPServer) Server() *mcp.Server {
-	return s.server
-}
-
 func (s *MCPServer) Start() error {
 	return s.server.Run(context.Background(), &mcp.StdioTransport{})
+}
+
+func (s *MCPServer) Server() *mcp.Server {
+	return s.server
 }

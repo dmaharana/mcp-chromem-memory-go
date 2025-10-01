@@ -10,21 +10,52 @@ A lightweight, dependency-free vector database that serves as an MCP (Model Cont
 - **Tagging System**: Organize documents with tags for easy lookup
 - **Favorites**: Mark important documents as favorites for higher search ranking
 - **Key-Value Properties**: Store additional metadata with each document
+- **Web Interface**: Browser-based dashboard for managing memories
+- **REST API**: Full REST endpoints for integration
+- **Usage Statistics**: Track tool usage and document counts
 - **MCP Server**: Compatible with Model Context Protocol for IDE integration
 - **Zero Dependencies**: Single binary with no external dependencies
 
 ## Building
 
 ```bash
-go build -o memory-server .
+go build -o memory-server ./cmd/memory-server
 ```
 
-## Usage as MCP Server
+## Usage Modes
+
+### Web Mode (Browser Interface)
+
+Start the server with a web interface that automatically opens in your browser:
+
+```bash
+./memory-server -web
+```
+
+Options:
+- `-web-port 8080`: Set web server port (default: 8080)
+- `-db-path memory.db`: Set database file path
+- `-open=false`: Disable automatic browser opening
+
+The web interface provides:
+- **Dashboard**: View statistics and document counts
+- **Add Memories**: Form to add new documents with tags, favorites, and properties
+- **Search & Browse**: Search through memories or view all documents
+- **Edit Documents**: Modify existing memories with automatic re-embedding
+- **Favorite Management**: Mark/unmark documents as favorites
+- **Real-time Stats**: Track usage of each operation
+
+### MCP Server Mode
 
 The memory server implements the Model Context Protocol (MCP) and can be used as a stdio server:
 
 ```bash
 ./memory-server
+```
+
+For MCP over HTTP:
+```bash
+./memory-server -http-port 3000
 ```
 
 ### Available MCP Tools
@@ -67,6 +98,44 @@ This server can be integrated with IDEs that support MCP, allowing developers to
 - Search through past decisions and discussions
 - Maintain context across projects and teams
 - Build a personal knowledge base that grows with the codebase
+
+## REST API Endpoints
+
+When running in web mode, the following REST endpoints are available:
+
+### Statistics
+- `GET /api/stats` - Get server statistics and document counts
+
+### Documents
+- `GET /api/documents` - List all documents
+- `POST /api/documents` - Add a new document
+- `GET /api/documents/{id}` - Get a specific document
+- `PUT /api/documents/{id}` - Update a document (triggers re-embedding)
+- `DELETE /api/documents/{id}` - Delete a document
+- `PUT /api/documents/{id}/favorite` - Toggle favorite status
+
+### Search
+- `GET /api/search?q={query}&limit={limit}&threshold={threshold}` - Search documents
+
+### Example API Usage
+
+```bash
+# Add a new memory
+curl -X POST http://localhost:8080/api/documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "How to fix null pointer in Go: always check if pointer is nil",
+    "tags": ["golang", "debugging"],
+    "favorite": true,
+    "properties": {"category": "tip"}
+  }'
+
+# Search memories
+curl "http://localhost:8080/api/search?q=golang%20debugging&limit=5"
+
+# Get statistics
+curl http://localhost:8080/api/stats
+```
 
 ## Example MCP Configuration
 
