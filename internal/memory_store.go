@@ -17,6 +17,7 @@ type Document struct {
 	Properties map[string]string `json:"properties"`
 	Favorite   bool              `json:"favorite"`
 	CreatedAt  time.Time         `json:"created_at"`
+	Score      float32           `json:"score,omitempty"`
 }
 
 type MemoryStore struct {
@@ -26,11 +27,14 @@ type MemoryStore struct {
 func NewMemoryStore(path string) (*MemoryStore, error) {
 	log.Info().Str("path", path).Msg("Initializing memory store")
 	
-	db := chromem.NewDB()
+	db, err := chromem.NewPersistentDB(path, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create persistent db: %w", err)
+	}
 	
 	// Create collection with custom embedding function
 	embedder := NewStatisticalEmbedder()
-	collection, err := db.CreateCollection("memories", nil, embedder)
+	collection, err := db.GetOrCreateCollection("memories", nil, embedder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create collection: %w", err)
 	}
@@ -88,7 +92,17 @@ func (ms *MemoryStore) SearchDocuments(query string, limit int, threshold float3
 		return nil, fmt.Errorf("collection not found")
 	}
 	
-	results, err := collection.Query(context.Background(), query, limit, nil, nil)
+	count := collection.Count()
+	if count == 0 {
+		return []Document{}, nil
+	}
+
+	nResults := limit
+	if limit > int(count) {
+		nResults = int(count)
+	}
+
+	results, err := collection.Query(context.Background(), query, nResults, nil, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to search documents")
 		return nil, fmt.Errorf("failed to search documents: %w", err)
@@ -105,6 +119,7 @@ func (ms *MemoryStore) SearchDocuments(query string, limit int, threshold float3
 			ID:        result.ID,
 			Content:   result.Content,
 			CreatedAt: time.Now(), // Default value
+			Score:     result.Similarity,
 		}
 		
 		// Parse metadata

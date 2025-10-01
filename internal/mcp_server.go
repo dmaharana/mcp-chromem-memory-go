@@ -66,21 +66,20 @@ func NewMCPServer(store *MemoryStore) *MCPServer {
 			args.Threshold = 0.1
 		}
 		docs, err := s.store.SearchDocuments(args.Query, args.Limit, args.Threshold)
-		if err != nil {
-			return nil, nil, fmt.Errorf("search failed: %w", err)
-		}
-
-		var results []string
-		for i, doc := range docs {
-			tags := strings.Join(doc.Tags, ", ")
-			favorite := ""
-			if doc.Favorite {
-				favorite = " ⭐"
-			}
-			result := fmt.Sprintf("%d. [%s]%s\nContent: %s\nTags: %s\nCreated: %s\n",
-				i+1, doc.ID, favorite, doc.Content, tags, doc.CreatedAt.Format("2006-01-02 15:04:05"))
-			results = append(results, result)
-		}
+				if err != nil {
+					return nil, nil, fmt.Errorf("search failed: %w", err)
+				}
+				var results []string
+				for i, doc := range docs {
+					tags := strings.Join(doc.Tags, ", ")
+					favorite := ""
+					if doc.Favorite {
+						favorite = " ⭐"
+					}
+					result := fmt.Sprintf("%d. [%s]%s (Score: %.2f)\nContent: %s\nTags: %s\nCreated: %s\n",
+						i+1, doc.ID, favorite, doc.Score, doc.Content, tags, doc.CreatedAt.Format("2006-01-02 15:04:05"))
+					results = append(results, result)
+				}
 		responseText := fmt.Sprintf("Found %d memories:\n\n%s", len(docs), strings.Join(results, "\n"))
 
 		return &mcp.CallToolResult{
@@ -139,6 +138,10 @@ func NewMCPServer(store *MemoryStore) *MCPServer {
 
 	s.server = server
 	return s
+}
+
+func (s *MCPServer) Server() *mcp.Server {
+	return s.server
 }
 
 func (s *MCPServer) Start() error {
